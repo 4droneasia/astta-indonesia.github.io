@@ -1,0 +1,60 @@
+
+div.ef-dataTables .dataTables_wrapper{
+	border:thin solid #b47858;
+	padding-top:8px;
+	background:#f9f9f91a;
+}
+div.ef-dataTables .dataTables_wrapper .dataTables_length, div.ef-dataTables .dataTables_wrapper .dataTables_info{
+	margin-left:10px;
+}
+div.ef-dataTables .dataTables_wrapper table{
+	border-left:0;
+	border-right:0;
+	background:#fff;
+}
+div.ef-dataTables .dataTables_wrapper table.table > thead {
+    color: #555;
+    font-weight: 400;
+    background: repeat-x #F2F2F2;
+	background-image: none;
+    background-image: -webkit-linear-gradient(top,#fafbfc 0,#f9f9f933 100%);
+    background-image: -o-linear-gradient(top,#fafbfc 0,#f9f9f933 100%);
+    background-image: linear-gradient(to bottom,#fafbfc 0,#f9f9f933 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff8f8f8', endColorstr='#ffececec', GradientType=0);
+}
+div.ef-dataTables .dataTables_wrapper table thead th{
+	border-bottom:0;
+	background-position: middle right !important;
+}
+div.ef-dataTables .dataTables_wrapper table tbody tr:first-child td{
+	border-top:thin solid #b47858;
+	overflow:visible !important;
+}
+div.ef-dataTables .dataTables_wrapper .dataTables_filter, div.ef-dataTables .dataTables_wrapper .dataTables_paginate {
+	margin-right:10px;
+	margin-top:10px;
+}
+div.ef-dataTables .ef-dataTables .dataTables_wrapper .dataTables_scrollBody{
+	overflow: hidden !important; 
+}
+div.ef-dataTables .dataTables_wrapper .pagination > .active > a, div.ef-dataTables .dataTables_wrapper .pagination > .active > a:focus, div.ef-dataTables .dataTables_wrapper .pagination > .active > a:hover, div.ef-dataTables .dataTables_wrapper .pagination > .active > span, div.ef-dataTables .dataTables_wrapper .pagination > .active > span:focus, div.ef-dataTables .dataTables_wrapper .pagination > .active > span:hover {
+	background:#E64A19;
+	border-color:#E64A19;
+	color:#fff;
+}
+div.ef-dataTables .dataTables_wrapper .pagination > li > a{
+	color:#40454b;
+}
+div.ef-dataTables .dataTables_wrapper div.dataTables_processing{
+	z-index: 1;
+}
+div.ef-dataTables .select2-container--default .select2-selection--single{
+	border-color:#E64A19 !important;
+}
+div.ef-dataTables input[type=search],
+div.ef-dataTables .pagination > li a{
+	border-radius: 0 !important;
+}
+div.ef-dataTables input[type=search]{
+	border-color: #E64A19;
+}

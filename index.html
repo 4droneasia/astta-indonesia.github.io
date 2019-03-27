@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<meta http-equiv="refresh" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=yes">
+        <meta name="HandheldFriendly" content="true"/>
+        <meta name="MobileOptimized" content="320"/>
+		<title>ASTTA UTM (prototype)</title>
+		<link rel="shortcut icon" href="">
+		<link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/custom.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/components.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/perfect-scrollbar.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/dataTables.bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/select2.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/daterangepicker.css">
+		<link rel="stylesheet" type="text/css" href="assets/fonts/font-awesome-4.7.0/css/font-awesome.css">
+		<link rel="stylesheet" type="text/css" href="assets/fonts/icon-font-7-stroke/pe-icon-7-stroke/css/pe-icon-7-stroke.css">
+		<link rel="stylesheet" type="text/css" href="assets/fonts/icon-font-7-stroke/pe-icon-7-stroke/css/helper.css">
+    <link rel="stylesheet" type="text/css" href="leaflet/leaflet.css" />
+		<link rel="stylesheet" type="text/css" href="leaflet-measure/hellcss" />
+		<style>
+		#map {
+			height: 100%;
+		}
+		.leaflet-top {
+			top: 3%;
+		}
+		.leaflet-bottom {
+			bottom: 3%;
+		}
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		.pointer{
+			position:absolute;
+			top:86px;
+			left:60px;
+			z-index:99999;
+		}
+		.peta{
+			width:100%;
+			height:100%;
+		}
+		.table-wrapper-scroll-y {
+			display: block;
+			max-height: 400px;
+			overflow-y: auto;
+			-ms-overflow-style: -ms-autohiding-scrollbar;
+		}
+		.table-wrapper-scroll-x {
+			display: block;
+			max-width: 400px;
+			overflow-x: auto; 
+			-ms-overflow-style: -ms-autohiding-scrollbar;
+		}
+		.leftwidget {
+			top: 10%;
+			left: 5px;
+		}
+		.widgetwindow {
+			position: absolute;
+			width: 400px;
+		}
+		</style>
+
+		<!-- LEAFLET -->
+    <script type="text/javascript" src="leaflet/leaflet.js"></script>
+    <!--<script type="text/javascript" src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>-->
+		<script type="text/javascript" src="leaflet/map/handler/Map.CenterScrollWheelZoom.js"></script>
+		<script type="text/javascript" src="leaflet/map/handler/Map.CenterTouchZoom.js"></script>
+		<script type="text/javascript" src="leaflet/leaflet.ajax.js"></script>
+		<script type="text/javascript" src="leaflet/layer/tile/Bing.js"></script>
+		<script type="text/javascript" src="leaflet/leaflet-google.js"></script>
+		<script type="text/javascript" src="leaflet/leaflet-here.js"></script>
+		<script type="text/javascript" src="leaflet/leaflet.polylineDecorator.js"></script>
+	</head>
+	<body>
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2" style="position: absolute; width:100%;">
+			<div class="row map-tools" style="padding-top: 0;">
+				<div class="col-md-4">
+					<ul class="map-control">
+						<li class="tes"><i id='mapgoogle' class="pe-7s-refresh pe-lg" onclick="location.reload();"></i></li>
+						<li><i id='mapfullscreen'  class="pe-7s-expand1 pe-lg"></i></li>
+						<li><i class="pe-7s-plus pe-lg" onclick="mymap.zoomIn()"></i></li>
+						<li><i class="pe-7s-less pe-lg" onclick="mymap.zoomOut()"></i></li>
+						<!--<li><i class="pe-7s-close-circle pe-lg"></i></li>-->
+						<!--<li><i class="pe-7s-map-marker pe-lg"></i></li>-->
+						<li><i id='screenshot' class="pe-7s-camera pe-lg" onclick="
+							//showHourGlass('image capture')
+							html2canvas($('#map'),{
+								useCORS: true,
+								//allowTaint:true,
+								onrendered: function(canvas) {
+								  //Canvas2Image.saveAsPNG(canvas);   
+								  var url = canvas.toDataURL();
+								  $('<a>', {
+									href: url,
+									download: 'screenshot.png'
+								  })
+								  .on('click', function() {
+									  $(this).remove()
+									  //hideHourGlass()
+									})
+								  .appendTo('body')[0].click()
+					  
+								}
+							  });
+							"></i></li>
+					</ul>
+				</div>
+				<div class="col-md-4 text-center"><input id="searchplace" class="form-control input-sm" type="text" placeholder="Search place.."/></div>
+				<div class="col-md-4">
+					<ul class="pull-right">
+            <li><span class="label label-default flat">AIS: <span id="jmlaislrit">0</span></span></li>
+            <!--<li><span class="label label-default flat">KKP: <span id="jmlkkp">0</span></span></li>-->
+						<li><span class="label label-default flat">SAR (AIS+SAT): <span id="jmlbasarnasaislrit">0</span></span></li>
+						<li><span class="label label-default flat">SAR Iridium: <span id="jmlbasarnasiridium">0</span></span></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="map"></div>
+		<div class="leftbar">
+			<ul class="list-unstyled">
+				<li>
+					<a class="leftbar-toggle" href="#" data-toggle="collapse" data-target="#search" aria-expanded="true"><i class="pe-7s-search pe-lg pe-fw"></i><p>Search</p></a>
+					<div class="panel panel-default collapse" id="search">
+						<div class="panel-heading">
+							Search on Map<span class="lb-close pull-right"><i class="pe-7s-close pe-lg"></i></span>
+						</div>
+						<div class="panel-body">
+							<div class="media">
+								<div class="media-left media-bottom">
+									<label>
+										<input name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl"></span>
+									</label>
+								</div>
+								<div class="media-body">
+									<select id="search_input_1" name="" data-placeholder="Vessel Name">
+										<option value="">Ketik Nama Kapal</option>
+									</select>
+								</div>
+							</div>
+							<div class="media">
+								<div class="media-left media-bottom">
+									<label>
+										<input name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl"></span>
+									</label>
+								</div>
+								<div class="media-body">
+									<select id="search_input_2" name="" data-placeholder="Vessel MMSI or Call Sign">
+										<option value=""></option>
+									</select>
+								</div>
+							</div>
+							<div class="media">
+								<div class="media-left media-bottom">
+									<label>
+										<input name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl"></span>
+									</label>
+								</div>
+								<div class="media-body">
+									<select id="search_input_3" name="" data-placeholder="Vessel IMO/ISN/IMEI">
+										<option value=""></option>
+									</select>
+								</div>
+							</div>
+							<div class="media">
+								<div class="media-left media-bottom">
+									<label>
+										<input name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl"></span>
+									</label>
+								</div>
+								<div class="media-body">
+									<select id="search_input_4" name="" data-placeholder="Point of Interest">
+										<option value=""></option>
+									</select>
+								</div>
+							</div>
+							<br/>
+							<button id="btnsearch" class="btn btn-info btn-xs flat pull-right" type="button">Apply</button>
+						</div>
+					</div>
+				</li>
+				<li>
+					<a class="leftbar-toggle" href="#" data-toggle="collapse" data-target="#filter" aria-expanded="true"><i class="pe-7s-filter pe-lg pe-fw"></i><p>Filter</p></a>
+					<div class="panel panel-default collapse" id="filter" style="width:520px">
+						<div class="panel-heading">
+							Filter by<span class="lb-close pull-right"><i class="pe-7s-close pe-lg"></i></span>
+						</div>
+						<div class="panel-body">
+							<ul class="accordion list-unstyled" id="accordion">
+								<li class="panel">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapse_1">
+										Vessel's Category
+									</a>
+									<div id="collapse_1" class="row collapse">
+										<div class="col-md-4">
+											<label>
+												<input id="filteraislrit" name="" value="" class="ef" type="checkbox" unchecked/>
+												<span class="lbl">AIS</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterbasarnasaislrit" name="vessels_category" value="" class="ef" type="radio" />
+												<span class="lbl">Basarnas (AIS-SAT)</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterbasarnasiridium" name="vessels_category" value="" class="ef" type="radio" checked/>
+												<span class="lbl">Basarnas Iridium</span>
+											</label>
+										</div>
+									</div>
+								</li>
+								<li class="panel">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapse_2">
+										Vessel's Type
+									</a>
+									<div id="collapse_2" class="row collapse">
+										<div class="col-md-4">
+											<label>
+												<input id="filtercargo" name="" value="Cargo" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Cargo</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterfishing" name="" value="Fishing" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Fishing</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filtertanker" name="" value="Tanker" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Tanker</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filtermilitary" name="" value="Military" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Military</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterhazard" name="" value="Hazard" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Hazard</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterpassanger" name="" value="Passanger" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Passenger</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterhighspeedcraft" name="" value="High speed craft" class="ef filtersub" type="checkbox" />
+												<span class="lbl">H.Speed Craft</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input id="filterother" name="" value="other" class="ef filtersub" type="checkbox" />
+												<span class="lbl">Other</span>
+											</label>
+										</div>
+									</div>
+								</li>
+								<li class="panel">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapse_3">
+										Point of Interest
+									</a>
+									<div id="collapse_3" class="row collapse">
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Pelabuhan" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Pelabuhan</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Kantor SAR" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Kantor SAR</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Pos SAR" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Pos SAR</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Insiden" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Insiden</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Dermaga" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Dermaga</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Kantor Polisi" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Kantor Polisi</span>
+											</label>
+										</div>
+										<div class="col-md-4">
+											<label>
+												<input name="" value="Kantor Pusat BASARNAS" class="ef filterpoi" type="checkbox" />
+												<span class="lbl">Kantor Pusat Basarnas</span>
+											</label>
+										</div>
+									</div>
+								</li>
+								<li class="panel">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapse_4">
+										Vessel's Flag
+									</a>
+									<div id="collapse_4" class="collapse nopadding">
+										<select id="search_input_flag" name="" data-placeholder="Flag">
+											<option value=""></option>
+										</select>
+									</div>
+								</li>
+							</ul>
+							<br/>
+							<center><button class="btn btn-info btn-xs flat pull-right" type="button">Apply</button></center>
+						</div>
+					</div>
+				</li>
+				<li>
+					<a class="leftbar-toggle" href="#" data-toggle="collapse" data-target="#track" aria-expanded="true"><i class="pe-7s-target pe-lg pe-fw"></i><p>Track</p></a>
+					<div class="panel panel-default collapse" id="track" style="width:500px">
+						<div class="panel-heading">
+							Vessel Tracking<span class="lb-close pull-right"><i class="pe-7s-close pe-lg"></i></span>
+						</div>
+						<div class="panel-body">
+							<select id="vesseltotrack" name="" data-placeholder="Enter Vessel Name to Track">
+								<option value=""></option>
+							</select>
+							<h5>Track Option</h5>
+							<ul class="list-unstyled">
+								<li>
+									<label>
+										<input id="TrackVesselToday" name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl">Today</span>
+									</label>
+								</li>
+								<li>
+									<label>
+										<input id="TrackVesselLastHour" name="r_1" value="" class="ef" type="radio" />
+                    <span class="lbl">Last X Hours</span>
+                    <input type="text" id="hoursrange" class="minimal" style="max-width: 50px" value="5">
+									</label>
+								</li>
+								<li>
+									<label>
+										<input id="TrackVesselLastPosition" name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl">Last X Position</span>
+										<input type="text" id="lastpositionrange" class="minimal" style="max-width: 50px" value="5">
+									</label>
+								</li>
+								<li>
+									<label>
+										<input id="TrackVesselBetweenDate" name="r_1" value="" class="ef" type="radio" />
+										<span class="lbl">Between Two Date</span>
+                  </label>
+								</li>
+								<li>
+                    <input type="text" class="form-control pull-right" id="TrackVesselDate">
+								</li>
+								<li>
+									<br>
+									<button id="trackbutton" class="btn btn-info btn-xs flat pull-right" type="button">Track</button>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</li>
+				<li>
+					<a class="leftbar-toggle" href="#" data-toggle="collapse" data-target="#region" aria-expanded="true"><i class="pe-7s-way pe-lg pe-fw"></i><p>Region</p></a>
+					<div class="panel panel-default collapse" id="region">
+						<div class="panel-heading">
+							Region SAR<span class="lb-close pull-right"><i class="pe-7s-close pe-lg"></i></span>
+						</div>
+						<div class="panel-body">
+							<div class="table-responsive table-wrapper-scroll-y" style="border:0;">
+								<table class="table table-bordered table-striped" id="regiontable"> 
+									<thead>
+										<tr>
+											<th>
+												<label>
+													<input name="r_1" value="" class="ef" type="checkbox" />
+													<span class="lbl"></span>
+												</label>
+											</th>
+											<th>Nama</th>
+											<th>Propinsi</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li>
+					<a class="leftbar-toggle" href="#" data-toggle="collapse" data-target="#incident" aria-expanded="true" onclick="$('#incident').toggle();"><i class="pe-7s-anchor pe-lg pe-fw"></i><p>Incident</p></a>
+				</li>
+			</ul>
+		</div>
+		<div class="leftbar leftwidget">
+			<div class="panel panel-default collapse widgetwindow" id="addpoi">
+				<div class="panel-heading">
+					<i class="fa fa-anchor"></i>&nbsp;<strong>ADD POI</strong>
+					<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#addpoi').hide()"></i></span>
+				</div>
+				<div class="panel-body">
+					<div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+            <table class="table table-bordered no-pad">
+              <tbody>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Name</b></small></td>
+                  <td><input type="text" name="poilist_name" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Description</b></small></td>
+                  <td><input type="text" name="poilist_name" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Tel.</b></small></td>
+                  <td><input type="text" name="poilist_tlp" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Fax.</b></small></td>
+                  <td><input type="text" name="poilist_fax" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Email</b></small></td>
+                  <td><input type="text" name="poilist_email" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Category</b></small></td>
+                  <td><select name="poilist_cat"  class="poilistsaved">
+                    <option value="0">--pilih kategori--</option>
+                    <option value="1">Kantor Pusat BASARNAS</option>
+                    <option value="2">Kantor SAR</option>
+                    <option value="3">Dermaga BASARNAS</option>
+                    <option value="4">Pelabuhan</option>
+                    <option value="5">Kantor Polisi</option>
+                    <option value="7">Insiden</option>
+                    <option value="13">Pelabuhan</option>
+                    <option value="15">Pergerakan Kapal</option>
+                  </select></td>
+                </tr>
+                <tr>
+                  <td class="active" style=""><i class="fa "></i></td>
+                  <td><small><b>Lat.</b></small></td>
+                  <td><input type="text" name="poilist_lat" id="poilist_lat" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active"><i class="fa "></i></td>
+                  <td><small><b>Long.</b></small></td>
+                  <td><input type="text" name="poilist_lon" id="poilist_lon" class="poilistsaved"></td>
+                </tr>
+                <tr>
+                  <td class="active">&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td align="right"><button onclick="savepoi($('.poilistsaved'))">Add</button></td>
+                </tr>
+              </tbody>
+            </table>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default widgetwindow collapse" id="shapelist">
+				<div class="panel-heading">
+					<i class="fa fa-tasks"></i>&nbsp;<strong>SHAPE LIST</strong>
+					<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#shapelist').hide()"></i></span>
+				</div>
+				<div class="panel-body">
+					<div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+						<table class="table table-bordered table-striped" id="shapelisttable"> 
+							<thead>
+								<tr>
+									<th>
+										<!--<label>
+											<input name="r_1" value="" class="ef" type="checkbox" />
+											<span class="lbl"></span>
+										</label>-->
+									</th>
+									<th>Nama</th>
+									<th>Jenis</th>
+								</tr>
+							</thead>
+							<tbody id="shapelisttablebody">
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default widgetwindow collapse" id="incident">
+				<div class="panel-heading">
+					<i class="fa fa-tasks"></i>&nbsp;<strong>INCIDENT LIST</strong>
+					<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#incident').hide()"></i></span>
+				</div>
+				<div class="panel-body">
+					<style>
+					* {
+							box-sizing: border-box;
+						}
+
+					#incidentsearch {
+						background-image: url('assets/images/searchicon.png');
+						background-position: 10px 10px;
+						background-repeat: no-repeat;
+						width: 100%;
+						font-size: 16px;
+						padding: 12px 20px 12px 40px;
+						border: 1px solid #ddd;
+						margin-bottom: 12px;
+					}
+					}
+					</style>
+					<input type="text" id="incidentsearch" onkeyup="myFunction()" placeholder="Search keywords.." title="Search keywords">
+					<div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+						
+						<table class="table table-bordered table-striped" id="incidenttable"> 
+							<thead>
+								<tr>
+									<th>
+										<label>
+											<input name="r_1" value="" class="ef" type="checkbox" />
+											<span class="lbl"></span>
+										</label>
+									</th>
+									<th>Kode</th>
+									<th>Insiden</th>
+								</tr>
+							</thead>
+							<tbody id="incidenttablebody">
+							</tbody>
+						</table>
+					</div>
+					<script>
+							function myFunction() {
+								var input, filter, table, tr, td, i, txtValue;
+								input = document.getElementById("incidentsearch");
+								filter = input.value.toUpperCase();
+								table = document.getElementById("incidenttable");
+								tr = table.getElementsByTagName("tr");
+								
+								for (i = 0; i < tr.length; i++) {
+									td = tr[i].getElementsByTagName("td")[1];
+									if (td) {
+										td2 = tr[i].getElementsByTagName("td")[2];
+										txtValue1 = td.textContent || td.innerText;
+										txtValue2 = td2.textContent || td2.innerText;	
+										txtValue = txtValue1 + txtValue2
+										if (txtValue.toUpperCase().indexOf(filter) > -1) {
+											tr[i].style.display = "";
+										} else {
+											tr[i].style.display = "none";
+										}
+									}       
+								}
+							}
+					</script>
+							
+				</div>
+			</div>
+			<div class="panel panel-default widgetwindow collapse" id="planning">
+				<div class="panel-heading">
+					Planning List<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#planning').hide()"></i></span>
+				</div>
+				<div class="panel-body">
+					<div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+						<table class="table table-bordered table-striped" id="planningtable"> 
+							<thead>
+								<tr>
+									<th>
+										<label>
+											<input name="r_1" value="" class="ef" type="checkbox" />
+											<span class="lbl"></span>
+										</label>
+									</th>
+									<th>Nama</th>
+									<th>Planning</th>
+								</tr>
+							</thead>
+							<tbody id="planningtablebody">
+							</tbody>
+						</table>
+					</div>
+				</div>
+      </div>
+      <div class="panel panel-default widgetwindow collapse" id="markerinshape">
+        <div class="panel-heading">
+          Marker List<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#markerinshape').hide()"></i></span>
+          <br>
+          <a href="#" onclick="$('#markerinshape').hide(); $('#polygoncoordlist').show()">Edit Polygon</a>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+            <table class="table table-bordered table-striped" id="markerinshapetable"> 
+              <thead>
+                <tr>
+                  <th>
+                    <label>
+                      <input name="r_1" value="" class="ef" type="checkbox" />
+                      <span class="lbl"></span>
+                    </label>
+                  </th>
+                  <th>Marker</th>
+                  <th>Jenis Marker</th>
+                </tr>
+              </thead>
+              <tbody id="markerinshapetablebody">
+              </tbody>
+						</table>
+						<!--<table class="table" style="width: 100%"> 
+							<tr>
+								<td>&nbsp;</td>
+								<td>&nbsp;</td>
+								<td><button onclick="markerinshapesave()">Save</button></th>
+							</tr>
+						</table>-->
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default widgetwindow collapse" id="polygoncoordlist">
+          <div class="panel-heading">
+            Polygon Coordinate List<span class="lb-close pull-right"><i class="pe-7s-close pe-lg" onclick="$('#polygoncoordlist').hide()"></i></span>
+          </div>
+          <div class="panel-body">
+						<div class="table-responsive table-wrapper-scroll-y table-wrapper-scroll-x" style="border:0;">
+							<label>Nama Poligon <input type="text" id="polygonsavedname"/></label>
+              <table class="table table-bordered table-striped" id="polygoncoordlisttable"> 
+                <thead>
+                  <tr>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody id="polygoncoordlisttablebody">
+                </tbody>
+							</table>
+            </div>
+          </div>
+        </div>
+      </div>
+		</div>
+		<script src="assets/js/jquery-3.2.1.min.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+		<script src="assets/js/jquery.dataTables.min.js"></script>
+		<script src="assets/js/jquery.dataTables.bootstrap.min.js"></script>
+		<script src="assets/js/select2.min.js"></script>
+		<script src="assets/js/perfect-scrollbar.jquery.js"></script>
+		<script src="assets/js/moment.min.js"></script>
+		<script src="assets/js/daterangepicker.js"></script>
+		<script src="assets/js/modal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+		<script src="leaflet-measure/leaflet-measure.js"></script>
+<script type="text/javascript">
+	var allowaddpoi = false
+  $('#searchplace').keyup(function(e){
+    if(e.keyCode == 13)
+    {
+      $(this).trigger("enterKey");
+    }
+  });
+
+  screen_height('.content-wraper', 86);
+  function screen_height(a, b){
+    var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    x = w.innerWidth || e.clientWidth || g.clientWidth,
+    y = w.innerHeight || e.clientHeight || g.clientHeight;
+    $(a).css('height', y - b);
+    $(a).css('overflow-y', 'auto');
+  }
+
+  $('.leftbar-toggle, .lb-close').click(function(i, v){
+      $('.leftbar .panel-default').collapse('hide');
+      $('.leftbar-toggle').each(function(){
+        $(this).removeClass('active');
+      });
+      $(this).addClass('active');
+  });
+
+  $('#search_input_1, #search_input_2,'+
+    '#search_input_3, #search_input_4,'+
+    '#vesseltotrack').select2({
+    width: '100%',
+    allowClear: false
+  });
+
+  $('#TrackVesselDate').daterangepicker({ 
+    timePicker: true,
+    timePicker24Hour: true,
+    timePickerIncrement: 30,
+    locale: {
+      format: 'MM/DD/YYYY H:mm'
+    }
+  }, function(start, end, label) {
+    console.log($('#TrackVesselDate').val());
+  })
+</script>
+<script>
+var mymap	
+var binglayer
+var osmlayer
+var osmtopolayer
+var googlelayer
+var basarnasmarker = []
+var aircraftmarker = []
+var typelayermarker = []
+var flaglayermarker = []
+var mylayercontrol
+var vessel = []
+var basarnaslayer,aircraftlayer, sublayer = [], trackinglayer = [], extendedpolylayer
+var mygeojson
+var zonasargeojson
+var myStyle = {
+			"color": "#ff0000",
+			"opacity": 0.2,
+			"weight": 1,
+			"fillColor": "#ffffff",
+			"fillOpacity": 0.1
+		};
+var noFlyStyle = {
+			"color": "#ff0000",
+			"opacity": 0.5,
+			"weight": 1,
+			"fillColor": "#ff0000",
+			"fillOpacity": 0.2
+		};
+var regionitems = []
+
+function addpoiwindow(lat,lon) {
+  return '<div class="vesselinfowindow" id="addpoiwindow">'+
+         '  <button onclick="addpoibuttonclick('+lat+','+lon+')">Add Poi</button>'+
+			  '</div>';
+}
+var addpoitemporarymarker;
+function addpoibuttonclick(lat,lon){
+  if(addpoitemporarymarker!=undefined){
+    mymap.removeLayer(addpoitemporarymarker)
+  }
+  mymap.closePopup(); 
+  $('#poilist_lat').val(lat);
+  $('#poilist_lon').val(lon);
+  $('#addpoi').show();
+  addpoitemporarymarker = L.marker([lat,lon]).addTo(mymap);
+  mymap.panTo([lat,lon]);
+}
+var measureControl
+function initMap(resetmapcenter) {
+	mymap = L.map('map').setView([0.404827,118.221831], 5);
+  mymap.on('measurefinish', function(evt) {
+        writeResults(evt);
+      });
+	mymap.on('openarchive', function(evt) {
+				openArchive();
+			});
+	mymap.on('click', function(e){
+									var coord = e.latlng;
+									var lat = coord.lat;
+									var lng = coord.lng;
+								});
+	mymap.on('dblclick ', function(e){
+									var coord = e.latlng;
+									var lat = coord.lat;
+									var lng = coord.lng;
+								});
+
+	L.control.scale ({maxWidth:240, metric:true, imperial:false, position: 'bottomleft'}).addTo(mymap);
+
+	bingKey = ('AnFxXUB376BgaEQMj947c43V45ipmMvdcoY-TAE4-Y23mu1yFLHF0k2BMJP-MU1B');
+	binglayer = new L.BingLayer(bingKey,
+			{
+				type: 'AerialWithLabels',
+				maxZoom: 21
+			});
+
+	osmUrl = ('http://{s}.tile.openstreetmap.org//{z}/{x}/{y}.png');
+	osmlayer = new L.TileLayer(osmUrl, { maxZoom: 18 });
+
+	osmtopoUrl = ('https://{a|b|c}.tile.opentopomap.org/{z}/{x}/{y}.png');
+	osmtopolayer = new L.TileLayer(osmUrl, { maxZoom: 18 });
+
+	googleearthlayer = new L.Google();
+	
+	herelayer =	L.tileLayer.here({appId: '4oOpW2OCc9lk6lZmV3rt', appCode: 'DqTRXQOwqYOlYG4PP10Jaw'});
+	var baseMaps = {
+		"Google Earth": googleearthlayer,
+		"Bing": binglayer,
+		"OSM": osmlayer,
+		"OSM topo": osmtopolayer,
+		"HERE": herelayer
+	};
+	mylayercontrol = L.control.layers(baseMaps)
+	mylayercontrol.addTo(mymap);
+
+	googlermlayer = new L.Google('ROADMAP');
+	mylayercontrol.addBaseLayer(googlermlayer,'Google Map')
+	
+	mymap.addLayer(osmtopolayer);
+
+	measureControl = new L.Control.Measure({ primaryLengthUnit: 'meters', 
+												 secondaryLengthUnit: 'kilometers',
+												 primaryAreaUnit: 'sqmeters', 
+												 secondaryAreaUnit: undefined });
+	measureControl.addTo(mymap);
+	
+	mymap.on('contextmenu',function(e){
+		if(allowaddpoi){
+			var popup = L.popup()
+					.setLatLng(e.latlng) 
+					.setContent(addpoiwindow(e.latlng.lat,e.latlng.lng))
+					.openOn(mymap);
+		}
+	});
+}
+
+function centerLeafletMapOnMarker(map, marker, zoomlvl) {
+	var latLngs = marker.getLatLng();
+
+	marker.addTo(mymap)
+	//console.log(marker)
+	marker.bindPopup(marker.vesselinfo).openPopup();
+
+	console.log(latLngs.lat,latLngs.lng)
+	map.panTo([latLngs.lat,latLngs.lng], 5);
+	if(zoomlvl==undefined){
+		map.setZoom(10)
+	} else {
+		map.setZoom(zoomlvl)
+	}
+	
+	//var markerBounds = L.latLngBounds(latLngs);
+	//map.fitBounds(markerBounds);
+}
+
+function SearchVesselClick(){
+  found = false;
+
+  var searchoption = $('input[name=r_1]');
+  
+  if(searchoption[0].checked){
+    var name = $('#search_input_1').val();
+		console.log(name)
+    if(name!='Vessel Name'){
+			centerLeafletMapOnMarker(mymap,vessel[name].marker)
+    }
+  } else if(searchoption[1].checked){
+    var mmsicallsign = $('#search_input_2').val();
+		console.log('Search '+mmsicallsign);
+		console.log(vessel.length);
+		centerLeafletMapOnMarker(mymap,vessel[mmsicallsign].marker)
+		/*vessel.forEach(function(item, index) {
+			console.log(item.markerinfo.id)
+			if(item.markerinfo.id==mmsicallsign){
+					centerLeafletMapOnMarker(mymap,item.marker)
+					console.log('Found');
+			}   
+		});*/
+  } else if(searchoption[2].checked){
+    var imoisn = $('#search_input_3').val();
+    if(imoisn!='Vessel IMO/ISN/IMEI'){
+			console.log('Search '+imoisn);
+			centerLeafletMapOnMarker(mymap,vessel[imoisn].marker)
+      /*vessel.forEach(function(item, index) {
+        //console.log(item.markerinfo.imei);
+        if(item.markerinfo.imei==imoisn){
+            item.setMap(map);  
+            console.log('Founded');
+            found = true;
+            map.panTo(item.getPosition());
+            //var pt = new google.maps.LatLng(lat, lng);
+            //map.setCenter(pt);
+            map.setZoom(8);
+            var infowindow = new google.maps.InfoWindow({
+                  content: item.infowindowcontent
+                });
+            infowindow.open(map, item);
+        } else {
+            //item.setMap(null);
+        }   
+      });*/
+    }
+  } else if(searchoption[3].checked){
+    var poiname = $('#searchPoiVessel').val();
+    if(poiname!='Point of Interest'){
+      console.log('Search '+poiname);
+
+      poimarkers.forEach(function(item, index) {
+        //console.log(item.markerinfo.imei);
+        if(item.markerinfo.name==poiname){
+            item.setMap(map);  
+            console.log('Founded');
+            found = true;
+            map.panTo(item.getPosition());
+            //var pt = new google.maps.LatLng(lat, lng);
+            //map.setCenter(pt);
+            map.setZoom(8);
+            var infowindow = new google.maps.InfoWindow({
+                  content: item.infowindowcontent
+                });
+            infowindow.open(map, item);
+        } else {
+            //item.setMap(null);
+        }   
+      });
+    }  
+  }
+}
+
+function getVesselData($link, $vesselMarker){
+      var vesselMarker = $vesselMarker;
+      $.getJSON($link, 
+            function(response) {
+                console.log(response);
+                data    = response;
+                var vesselinfobody = '<div class="vesselinfowindow" id="vesselinfowindow">'+
+                  '         <h4>&nbsp;&nbsp;'+
+                  '             <i class="fa fa-ship"></i>&nbsp;&nbsp;&nbsp;<strong>'+data.name+
+                  '         </strong></h4>'+
+                  '         <table class="table table-bordered no-pad">'+
+                  '            <tbody>'+
+                  '               <tr>'+
+                  '                  <td class="active" style=""><i class="fa fa-anchor"></i></td>'+
+                  '                  <td><small>Category <b>'+data.category+'</b></small></td>'+
+                  '                  <td><small>Type <b>'+data.type+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i></i></td>'+
+                  '                  <td><small>ID <b>'+data.id+'</b></small></td>'+
+                  '                  <td><small>IMEI <b>'+data.imei+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-bar-chart-o"></i></td>'+
+                  '                  <td><small>Speed <b>'+data.speed+' Knot</b></small></td>'+
+                  '                  <td><small>Heading <b>'+data.heading+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-calendar"></i></td>'+
+                  '                  <td><small>Last Active local time <b>'+data.stamphere+'</b></small></td>'+
+                  '                  <td><small>Last Active UTC time <b>'+data.stamp+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-map-marker"></i></td>'+
+                  '                  <td><small>Latitude <b>'+data.lat+'</b></small></td>'+
+                  '                  <td><small>Longtitude <b>'+data.lon+'</b></small>'+
+                  '                  </td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-compass"></i></td>'+
+                  '                  <td><small>Destination <b>'+data.destination+'</b></small></td>'+
+                  '                  <td><small>ETA <b>'+data.eta+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-flag"></i></td>'+
+                  '                  <td><small>Flag <b>'+data.flag+'</b></small></td>'+
+                  '                  <td><small><b></b></small></td>'+
+                  '               </tr>'+
+                  '            </tbody>'+
+                  '         </table>'+
+                  '</div>';
+                vesselMarker.infowindowcontent = vesselinfobody;
+
+                var infowindow = new google.maps.InfoWindow({
+                        content: vesselinfobody
+                });
+                infowindow.open(map, vesselMarker);
+                lastvesselinfowindow = infowindow;
+            }); 
+  }
+var currentpopup;
+function VesselAdd(vesseldata,arrayobj) {
+  let vesselcategory = vesseldata[0];
+  let vesselinfo = vesseldata[1];
+  let vesselname = vesselinfo.name;
+	//console.log(vesselinfo)
+	//debugger;
+  let idtype = ""
+  if(vesselinfo.category=='ais'){
+    idtype = "IMO"
+  } else if(vesselinfo.category=='basarnas'){
+    idtype = "IMO"
+  } else if(vesselinfo.category=='SAR'){
+    idtype = "IMEI"
+  }
+
+  let vesselheading = parseFloat(vesselinfo.heading);
+  if(vesselheading<0){
+    vesselheading = 360+vesselheading
+  }
+  let vesselheadingfloor = Math.floor(vesselheading/10)*10; 
+	if(vesselheadingfloor>=360){
+		vesselheadingfloor=0;
+	}
+	if(vesselheadingfloor>0){
+		vesselheadingfloor=360-vesselheadingfloor;
+	}
+  let vesseliconurl = 'http://astta-indonesia.github.io/aircraft.png';
+  //console.log(vesselicon)
+	let vessellat = vesselinfo.lat;
+  let vessellong = vesselinfo.lon;
+  let vesselspeed = vesselinfo.speed;
+    
+  let link = 'https://www.avdelphi.com/flight.html?callsign='+vesselinfo.name;
+    
+	let vesselicon = L.icon({
+						iconUrl: vesseliconurl,
+						iconSize: [8, 8], // size of the icon
+						iconAnchor: [4, 4], // point of the icon which will correspond to marker's location
+						popupAnchor: [-4, -4] // point from which the popup should open relative to the iconAnchor
+					});	  
+	
+	let hoverwindow = '<strong>'+vesselname+'</strong><br>'+
+					'Heading: '+vesselheading+'<br>'+
+					'Speed: '+vesselspeed+'<br>'+
+					'Lat: '+vessellat+'<br>'+
+					'Lon: '+vessellong+'<br>'+
+					'<a href="'+link+'" target=”_blank”>detail</a>';
+
+    var vesselinfobody = '<div class="vesselinfowindow" id="vesselinfowindow">'+
+                  '         <h4>&nbsp;&nbsp;'+
+                  '             <i class="fa fa-ship"></i>&nbsp;&nbsp;&nbsp;<strong>'+vesselinfo.name+
+                  '         </strong></h4>'+
+                  '         <table class="table table-bordered no-pad">'+
+                  '            <tbody>'+
+                  '               <tr>'+
+                  '                  <td class="active" style=""><i class="fa fa-anchor"></i></td>'+
+                  '                  <td><small>Category <b>'+vesselinfo.category+'</b></small></td>'+
+                  '                  <td><small>Type <b>'+vesselinfo.type+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i></i></td>'+
+                  '                  <td><small>ID <b>'+vesselinfo.id+'</b></small></td>'+
+                  '                  <td><small>'+idtype+' <b>'+vesselinfo.imei+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-bar-chart-o"></i></td>'+
+                  '                  <td><small>Speed <b>'+vesselinfo.speed+' Knot</b></small></td>'+
+                  '                  <td><small>Heading <b>'+vesselinfo.heading+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-calendar"></i></td>'+
+                  '                  <td><small>Last Active local time <b>'+vesselinfo.stamp+'</b></small></td>'+
+                  '                  <td><small>Last Active UTC time <b>'+vesselinfo.stamputc+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-map-marker"></i></td>'+
+                  '                  <td><small>Latitude <b>'+vesselinfo.lat+'</b></small></td>'+
+                  '                  <td><small>Longtitude <b>'+vesselinfo.lon+'</b></small>'+
+                  '                  </td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-compass"></i></td>'+
+                  '                  <td><small>Destination <b>'+vesselinfo.destination+'</b></small></td>'+
+                  '                  <td><small>ETA <b>'+vesselinfo.eta+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-flag"></i></td>'+
+                  '                  <td><small>Flag <b>'+vesselinfo.flag+'</b></small></td>'+
+                  '                  <td><small><b></b></small></td>'+
+                  '               </tr>'+
+                  '            </tbody>'+
+                  '         </table>'+
+                  '</div>';
+
+	let thismarker = L.marker([vessellat, vessellong], {icon: vesselicon}); //.bindPopup(vesselinfobody);
+	thismarker.vesselinfo = vesselinfobody
+  thismarker.vesselname = vesselinfo.name
+	thismarker.on('click', function(e) {
+			currentpopup = L.popup()
+			.setLatLng(e.latlng) 
+			.setContent(vesselinfobody)
+			.openOn(mymap);
+			console.log(currentpopup._isOpen)
+		});
+
+	thismarker.on('mouseover', function(e) {
+			setTimeout(function(){
+				//console.log(currentpopup._isOpen)
+				if(currentpopup==undefined){
+					L.popup()
+						.setLatLng(e.latlng) 
+						.setContent(hoverwindow)
+						.openOn(mymap);
+				} else if(!currentpopup._isOpen){
+					L.popup()
+						.setLatLng(e.latlng) 
+						.setContent(hoverwindow)
+						.openOn(mymap);
+				}
+			},1200)
+			
+		});
+	
+	arrayobj.push(thismarker)
+
+	if(typelayermarker[vesselinfo.type]==undefined){
+		typelayermarker[vesselinfo.type] = []
+	}
+	
+	typelayermarker[vesselinfo.type].push(thismarker)
+	
+	if(flaglayermarker[vesselinfo.flag]==undefined){
+		flaglayermarker[vesselinfo.flag] = []
+	}
+	flaglayermarker[vesselinfo.flag].push(thismarker)
+
+	let vesselMarker = {
+          position: {vessellat, vessellong},
+		  marker: thismarker,
+          markerinfo: vesselinfo,
+          markervcategory: vesselcategory,
+		  infowindowcontent: vesselinfobody,
+		  infowindow: vesselinfobody
+        };
+  //vessel.push(vesselMarker);
+	vessel[vesselname] = vesselMarker
+	vessel[vesselinfo.id] = vesselMarker
+	vessel[vesselinfo.imei] = vesselMarker
+	
+	/*var newOption = new Option(vesselname, vesselname, false, false);
+	$('#search_input_1').append(newOption).trigger('change');
+	
+	newOption = new Option(vesselinfo.id, vesselinfo.id, false, false);
+	$('#search_input_2').append(newOption).trigger('change');*/
+}
+
+function loadOpenskyAircraft(){
+	$.getJSON("https://opensky-network.org/api/states/all?lamin=-10.329396&lomin=92.487678&lamax=6.845001&lomax=141.258734", 
+		function(result){
+			$.each(result.states, function(i, field){
+				icao24 = field[0];
+				callsign = field[1];
+				origin_country = field[2];
+				time_position = field[3];
+				last_contact = field[4];
+				longitude = field[5];
+				latitude = field[6];
+				baro_altitude = field[7];
+				on_ground = field[8];
+				velocity = field[9];
+				true_track = field[10];
+				vertical_rate = field[11];
+				sensors = field[12];
+				geo_altitude = field[13];
+				squawk = field[14];
+				spi = field[15];
+				position_source = field[16];
+
+
+				thisfield = {
+											id:null,
+											category:"AIRCRAFT",
+											name:callsign,
+											imei: icao24,
+											flag: origin_country,
+											flagcode:	"525",
+											flagname:	origin_country,
+											lat: latitude,
+											lon: longitude,
+											speed: velocity,
+											stamputc: new Date(Date.UTC(96, 1, 2, 3, 4, 5)).toUTCString(),
+											stamputc2:	"2019-03-10 03:06",
+											heading: 	".0",
+											stamp:	"2019-03-10 10:19:00",
+											destination: "-",
+											eta:	"-",
+											marker:	"a-k-d.png",
+											type_id:	"3",
+											type: "AIRCRAFT"
+										}
+				VesselAdd(['aircraft',thisfield],aircraftmarker)
+			});
+			aircraftlayer = L.layerGroup(aircraftmarker).addTo(mymap);
+			//mylayercontrol.addOverlay(basarnaslayer,'Basarnas Iridium')
+		});	
+  }
+
+function loadVesselAmount(){
+		$('#jmlaislrit').html(0)					
+		$('#jmlbasarnasaislrit').html(0)	
+		$('#jmlbasarnasiridium').html(0)
+		$('#jmlkkp').html(0)
+  }
+
+function loadZonaSar(){
+	$.getJSON('./zonasarjson.php', function (ajaxgeojson) {
+		zonasargeojson = ajaxgeojson
+		addtofilter = function(feature) {
+			//console.log(feature.properties)
+			$('#regiontable > tbody:last-child').append('<tr><td><label><input onclick="regionclicked(this)" type="checkbox" class="regionitem" name="r_1" value="'+feature.properties.KANTOR+'" class="ef" checked /><span class="lbl"></span></label>'+
+														'</td><td>'+feature.properties.REGION+'</td><td>'+feature.properties.KANTOR+'</td></tr>');
+			regionitems[feature.properties.KANTOR] = true
+			return true
+		}
+		
+		mygeojson = L.geoJson(zonasargeojson,{style: myStyle,filter: addtofilter}).addTo(mymap)
+		
+		//console.log(mygeojson._layers)
+
+		mygeojson.on('click',function(e){
+				var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+				var latlngPoint = new L.LatLng(lat, lng);
+				mymap.fireEvent('click', {
+                    latlng: latlngPoint,
+                    layerPoint: mymap.latLngToLayerPoint(latlngPoint),
+                    containerPoint: mymap.latLngToContainerPoint(latlngPoint)
+			});
+		})
+		mygeojson.on('dblclick',function(e){
+				var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+				var latlngPoint = new L.LatLng(lat, lng);
+				mymap.fireEvent('dblclick', {
+                    latlng: latlngPoint,
+                    layerPoint: mymap.latLngToLayerPoint(latlngPoint),
+                    containerPoint: mymap.latLngToContainerPoint(latlngPoint)
+			});
+		})
+		mygeojson.on('contextmenu',function(e){
+			var lat = e.latlng.lat;
+			var lng = e.latlng.lng;
+			var latlngPoint = new L.LatLng(lat, lng);
+			mymap.fireEvent('contextmenu', {
+				latlng: latlngPoint,
+				layerPoint: mymap.latLngToLayerPoint(latlngPoint),
+				containerPoint: mymap.latLngToContainerPoint(latlngPoint)
+			});
+		})
+	})	
+  }
+
+function loadNoFlyZone(){
+	var nofly = $.getJSON('https://astta-indonesia.github.io/noflyzone.json', function (ajaxgeojson) {
+			console.log('no fly done')
+		})
+	
+	$.when(nofly).done(function() {
+		console.log('no fly this when done')
+		var jsonres = nofly.responseJSON
+		//console.log(jsonres.features[0])
+		mygeojson = L.geoJson(jsonres,{style: noFlyStyle}).addTo(mymap)
+	})
+}
+
+var selectedvessellayer
+function filtervessel(){
+	var selectedvessel = []
+
+	if(selectedvessellayer!==undefined){
+		mylayercontrol.removeLayer(selectedvessellayer)
+	}
+
+	vessel.forEach(function(item, index, array) {
+			//console.log(item)
+			if(item.markerinfo.type_id==12){
+				selectedvessel.push(item.marker)
+			}
+
+			if(index==array.length-1){
+				selectedvessellayer = L.layerGroup(selectedvessel).addTo(mymap);
+				mylayercontrol.addOverlay(selectedvessellayer,'Filter Result')
+			}
+		});
+}
+
+function filterRegion(id,isRecheckVessel){
+  chk = $('#region'+id)
+  if(chk.is(":checked")){
+    map.data.add(zonasar[chk.val()-1]);
+    zonasar[id-1].marker.setMap(map)
+
+    if(isRecheckVessel===undefined){
+      vessel.forEach(function(item, index) {
+          if (google.maps.geometry.poly.containsLocation(item.getPosition(), zonasar[id-1].polygon)) {
+            //console.log(item.markerinfo.name);
+            if(item.isRegionMute!==undefined){
+              //item.setMap(map)
+              if(item.markervcategory=='basarnasiridium'){
+                if($('#categoryBasarnasIridiumVessel').is(':checked')){
+                  item.setMap(map);  
+                } else {
+                  item.setMap(null);
+                }
+              } else if(item.markervcategory=='basarnasaislrit'){
+                if($('#categoryBasarnasAisLritVessel').is(':checked')){
+                  item.setMap(map);  
+                } else {
+                  item.setMap(null);
+                }
+              } else if(item.markervcategory=='aislrit'){
+                if($('#categoryAisLritVessel').is(':checked')){
+                  item.setMap(map);  
+                } else {
+                  item.setMap(null);
+                }
+              }
+            }
+          }
+        });
+    }
+  }else{
+    map.data.remove(zonasar[chk.val()-1]);
+    zonasar[id-1].marker.setMap(null)
+    if(isRecheckVessel===undefined){
+      vessel.forEach(function(item, index) {
+          if (google.maps.geometry.poly.containsLocation(item.getPosition(), zonasar[id-1].polygon)) {
+            //console.log(item.markerinfo.name);
+            if(item.getMap()==map){
+              item.setMap(null);
+              item.isRegionMute = true;  
+            }
+          }
+        });
+    }
+  }
+  setTimeout(function(){hideHourGlass()},5000);
+}
+
+function toggleFullScreen() {
+  
+  if (!document.fullscreenElement &&    // alternative standard method
+      !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  // current working methods
+    $('#bs-example-navbar-collapse-2').show();
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+      document.documentElement.msRequestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+  } else {
+    $('#bs-example-navbar-collapse-2').hide();
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+
+$(L, document).ready(function() {
+	//loadZonaSar()
+	loadNoFlyZone()
+	//loadBasarnasIridiumVessel()
+	loadOpenskyAircraft()
+	loadVesselAmount()
+
+	$('#btnsearch').click(SearchVesselClick)
+	$('#filteraislrit').click(function(){
+		console.log('filter air lrit clicked')
+		if(mymap.hasLayer(aislritlayer)) {
+			$(this).removeClass('selected');
+			mymap.removeLayer(aislritlayer);
+		} else {
+			mymap.addLayer(aislritlayer);        
+			$(this).addClass('selected');
+   		}
+	})
+	$('#filterbasarnasaislrit').change(function(){
+		console.log($('#filterbasarnasaislrit').val())
+		if(mymap.hasLayer(basarnaslayer)) {
+			mymap.addLayer(basarnaslritlayer);
+			mymap.removeLayer(basarnaslayer);
+		} 
+	})
+	$('#filterbasarnasiridium').click(function(){
+		if(mymap.hasLayer(basarnaslritlayer)) {
+			mymap.addLayer(basarnaslayer);
+			mymap.removeLayer(basarnaslritlayer);
+		} 
+	})
+
+	$('.filtersub').click(function(){
+		subtype = $(this).val()
+		console.log(subtype)
+		if(mymap.hasLayer(aislritlayer)) {
+			mymap.removeLayer(aislritlayer);        
+   		}
+		if(sublayer[subtype]==undefined){
+			sublayer[subtype] = L.layerGroup(typelayermarker[subtype]).addTo(mymap);
+		} else {
+			if(mymap.hasLayer(sublayer[subtype])) {
+				mymap.removeLayer(sublayer[subtype]);
+			} else {
+				mymap.addLayer(sublayer[subtype]);
+			}
+		}
+	})
+
+	$('.filterpoi').click(function(){
+		subtype = $(this).val()
+		console.log(subtype)
+		
+		if(sublayer['poi-'+subtype]==undefined){
+			sublayer['poi-'+subtype] = L.layerGroup(typelayermarker['poi-'+subtype]).addTo(mymap);
+		} else {
+			if(mymap.hasLayer(sublayer['poi-'+subtype])) {
+				mymap.removeLayer(sublayer['poi-'+subtype]);
+			} else {
+				mymap.addLayer(sublayer['poi-'+subtype]);
+			}
+		}
+	})
+
+	$('#mapfullscreen').click(function(){
+		toggleFullScreen()
+	})
+
+	/*$('#screenshot').click(function(){
+		html2canvas( document.body, {
+			onrendered: function( canvas ) {
+				var img = canvas.toDataURL();
+				window.open(img);
+			}
+		});
+
+		html2canvas(document.body).then(function(canvas) {
+			var base64image = canvas.toDataURL("image/png");
+			window.open(base64image);
+		});
+	})*/
+
+	$('#searchplace').bind("enterKey",function(e){
+			$.getJSON("https://maps.googleapis.com/maps/api/geocode/json?address="+$('#searchplace').val()+"&key=AIzaSyBzAtOS3k090Ovxmts9Cv1_BMPtaHXe-W4", 
+				function(r){
+					//console.log(r)
+					//$.each(r.results, function(i, item){
+						item = r.results[0]
+						console.log(item.geometry.location.lat, item.geometry.location.lng)
+						mymap.panTo([item.geometry.location.lat,item.geometry.location.lng], 5);
+						mymap.setZoom(9)
+					//});
+				});
+		});
+
+	$('#search_input_1,#vesseltotrack').select2({
+        minimumInputLength: 2,
+        ajax: {
+                url: 'imei-serv.php?type=name',
+                delay: 200,
+                dataType: 'json',
+                processResults: function (data) {
+                    // Tranforms the top-level key of the response object from 'items' to 'results'
+                    //console.log(data)
+                    return { results: data};
+                }
+            }
+    })
+	
+	$('#search_input_2').select2({
+        minimumInputLength: 2,
+        ajax: {
+                url: 'imei-serv.php?type=imo',
+                delay: 200,
+                dataType: 'json',
+                processResults: function (data) {
+                    // Tranforms the top-level key of the response object from 'items' to 'results'
+                    //console.log(data)
+                    return { results: data};
+                }
+            }
+		})
+
+	$('#search_input_3').select2({
+        minimumInputLength: 2,
+        ajax: {
+                url: 'imei-serv.php?type=imei',
+                delay: 200,
+                dataType: 'json',
+                processResults: function (data) {
+                    // Tranforms the top-level key of the response object from 'items' to 'results'
+                    //console.log(data)
+                    return { results: data};
+                }
+            }
+		})
+
+	$('#search_input_flag').select2({
+        minimumInputLength: 2,
+        ajax: {
+                url: 'imei-serv.php?type=flag',
+                delay: 200,
+                dataType: 'json',
+                processResults: function (data) {
+                    //console.log(data)
+                    return { results: data};
+                }
+            }
+	})
+	$('#search_input_flag').on('select2:close', function (e) {
+		subtype = $(this).val()
+		//console.log(subtype)
+		if(mymap.hasLayer(aislritlayer)) {
+			mymap.removeLayer(aislritlayer);        
+   		}
+		if(sublayer[subtype]==undefined){
+			sublayer[subtype] = L.layerGroup(flaglayermarker[subtype]).addTo(mymap);
+		} else {
+			if(mymap.hasLayer(sublayer[subtype])) {
+				mymap.removeLayer(sublayer[subtype]);
+			} else {
+				mymap.addLayer(sublayer[subtype]);
+			}
+		}
+	});
+	$('#trackbutton').click(function(){
+		TrackVessel()
+	})
+
+	$('#poilist_lat').on('input',function(e){
+		console.log('lat pos change')
+    let lat = this.value;
+		let lon = $('#poilist_lon').val();
+		if(!isNaN(lat)){
+			if((lat>-10.329396) && (lat<6.845001)){
+				if(addpoitemporarymarker!=undefined){
+					let newLatLng = new L.LatLng(lat, lon);
+    			addpoitemporarymarker.setLatLng(newLatLng);
+				}
+			}	
+		}
+	});
+
+  $('#poilist_lon').on('input',function(e){
+		console.log('lon pos change')
+    let lon = this.value;
+		let lat = $('#poilist_lat').val();
+		if(!isNaN(lon)){
+			if((lon>92.487678 ) && (lon<141.258734)){
+				if(addpoitemporarymarker!=undefined){
+					let newLatLng = new L.LatLng(lat, lon);
+    			addpoitemporarymarker.setLatLng(newLatLng);
+				}
+			}	
+		}
+	});
+});
+var lastresult
+function openResult(shaperow){
+	console.log(JSON.parse( unescape(shaperow.value)))
+	result_template = {
+			area: 0,
+			areaDisplay: "0.00 Acres",
+			lastCoord: {
+				dd: {
+					x: 0,
+					y: 0
+				},
+				dms: {
+					x: "",
+					y: ""
+				}
+			},
+			length: 0,
+			lengthDisplay: "",
+			pointCount: 2
+		}
+	shaperow = JSON.parse( unescape(shaperow.value))
+	//console.log("path",shaperow.shapedata.path)
+	if(shaperow.shapetype=="circle"){
+		result_template.lastCoord.shape="circle"
+		result_template.lastCoord.radius=shaperow.shapedata.radius
+		result_template.lastCoord.dd.x=parseFloat(shaperow.shapedata.path[0].lat)
+		result_template.lastCoord.dd.y=parseFloat(shaperow.shapedata.path[0].lng)
+		result_template.pointCount = 2
+	} else {
+		result_template.lastCoord.dd.x=parseFloat(shaperow.shapedata.path[shaperow.shapedata.path.length-1].lat)
+		result_template.lastCoord.dd.y=parseFloat(shaperow.shapedata.path[shaperow.shapedata.path.length-1].lng)
+		result_template.pointCount = shaperow.shapedata.path.length
+		
+	}
+	result_template.points = shaperow.shapedata.path
+	writeResults(null,result_template)
+	//L.polygon(lastresult.points).addTo(mymap)
+	/*console.log(result_template.points)
+	result_template.points = new Array(shaperow.shapedata.path.slice())
+	//result_template.points.push("test")
+	//result_template.points = Array.from(shaperow.shapedata.path)
+	lastresult = result_template
+	console.log(result_template.points)
+	console.log(lastresult.points.length)
+	writeResults()*/
+}
+
+function markerinshapesave(){
+	let vesselssaved = []
+	table = document.getElementById("markerinshapetable");
+  tr = table.getElementsByTagName("tr");
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[1];
+    if (td) {
+			td2 = tr[i].getElementsByTagName("td")[2];
+      vesselname = td.textContent || td.innerText;
+			vesseltype = td2.textContent || td2.innerText;
+			vesselssaved.push({vesselname: vesselname, vesseltype: vesseltype})
+      
+    }       
+  }
+	console.log(vesselssaved)
+	return vesselssaved
+}
+function VesselTrackingAdd(t){
+  var trackingmarkergroup = []
+  var pointList = []
+  /*data.vesseltracking.forEach(function(item,i){
+        pointrack = L.marker([item.lat, item.lon]).addTo(mymap); 
+        pointrack.bindPopup(item.stamp).openPopup();
+      })*/
+  if(t.total>0){
+    start = L.marker([t.vesseltracking[0].lat, t.vesseltracking[0].lon]); 
+    //start.bindPopup("Awal");
+    trackingmarkergroup.push(start)
+    stop = L.marker([t.vesseltracking[t.total-1].lat, t.vesseltracking[t.total-1].lon]); 
+    //stop.bindPopup("Akhir");
+    trackingmarkergroup.push(stop)
+  }
+  for (var i = 0; i < t.total; i++) {
+    var point = new L.LatLng(t.vesseltracking[i].lat,t.vesseltracking[i].lon);
+		var vesselinfobody = '<div class="vesselinfowindow" id="vesselinfowindow">'+
+                  '         <h4>&nbsp;&nbsp;'+
+                  '             <i class="fa fa-ship"></i>&nbsp;&nbsp;&nbsp;<strong>'+t.vesseltracking[i].name+
+                  '         </strong></h4>'+
+                  '         <table class="table table-bordered no-pad">'+
+                  '            <tbody>'+
+                  '               <tr>'+
+                  '                  <td class="active" style=""><i class="fa fa-anchor"></i></td>'+
+                  '                  <td><small>Category <b>'+t.vesseltracking[i].category+'</b></small></td>'+
+                  '                  <td><small>Type <b>'+t.vesseltracking[i].type+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i></i></td>'+
+                  '                  <td><small>ID <b>'+t.vesseltracking[i].id+'</b></small></td>'+
+                  '                  <td><small><b>'+t.vesseltracking[i].imei+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-bar-chart-o"></i></td>'+
+                  '                  <td><small>Speed <b>'+t.vesseltracking[i].speed+' Knot</b></small></td>'+
+                  '                  <td><small>Heading <b>'+t.vesseltracking[i].heading+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-calendar"></i></td>'+
+                  '                  <td><small>Last Active local time <b>'+t.vesseltracking[i].stamp+'</b></small></td>'+
+                  '                  <td><small>Last Active UTC time <b>'+t.vesseltracking[i].stamputc+'</b></small></td>'+
+                  '               </tr>'+
+                  '               <tr>'+
+                  '                  <td class="active"><i class="fa fa-map-marker"></i></td>'+
+                  '                  <td><small>Latitude <b>'+t.vesseltracking[i].lat+'</b></small></td>'+
+                  '                  <td><small>Longtitude <b>'+t.vesseltracking[i].lon+'</b></small>'+
+                  '                  </td>'+
+                  '               </tr>'+
+                  '            </tbody>'+
+                  '         </table>'+
+                  '</div>';
+    //circle.bindPopup(vesselinfobody)                      
+		pointList.push(point)
+    //trackingmarkergroup.push(circle)
+  }
+
+	var trackpolyline = new L.Polyline(pointList, {});
+	/*{
+		color: 'red',
+		weight: 3,
+		opacity: 0.5,
+		smoothFactor: 1,
+		dashArray: '20,5',
+		lineJoin: 'round'
+	});*/
+
+	var arrowHead = L.polylineDecorator(trackpolyline, {
+        patterns: [
+						{offset: '100%', 
+						 repeat: 0, 
+						 symbol: L.Symbol.arrowHead({pixelSize: 15, 
+																				 polygon: false, 
+																				 pathOptions: {stroke: true}})}
+        ]
+    });
+
+	trackingmarkergroup.push(trackpolyline)
+	//trackingmarkergroup.push(arrowHead)
+  trackinglayer = L.layerGroup(trackingmarkergroup).addTo(mymap);
+	mymap.panTo([parseFloat(t.vesseltracking[0].lat),parseFloat(t.vesseltracking[0].lon)], 5);
+	mymap.setZoom(12)
+}
+
+function regionclicked(cb){
+	console.log(cb.checked)
+	regionitems[cb.value] = cb.checked
+	mymap.removeLayer(mygeojson);
+	picnicFilter = function(feature) {
+		if(regionitems[feature.properties.KANTOR]){
+			return true
+		}
+	}
+	mygeojson = L.geoJson(zonasargeojson,{style: myStyle,filter: picnicFilter}).addTo(mymap)
+}
+
+</script>
+<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzAtOS3k090Ovxmts9Cv1_BMPtaHXe-W4&libraries=drawing,places&callback=initMap"
+async defer></script>
+</body>
+</html>
