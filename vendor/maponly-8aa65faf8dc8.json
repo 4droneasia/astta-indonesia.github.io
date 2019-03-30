@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "maponly",
+  "private_key_id": "8aa65faf8dc84205344e17b410ece58fa6500758",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDABTiL8c7aq81O\ne+jAtGDvmxzAolFrlEPCfa8i3i7p6UwZlzW3OPHCIo/GwT5+mgVSrcgehdIsi6GF\nZbRowozOCheaq5QK5PiRlQ4UIIlvNyqaQ+uvWgwpc6dNp6G9H5WVf63FFervT059\nS/N6EVraIY7v/4x4n0tsp+h+F9QYBdIYBQrtLRzOiDdST3nDI60Enqq59qQ0lPiN\n7ICUvOGrVfnz/DWdDxnRYNCy/uAcSYlnBie+BDxPo9uRh1anasJYVHdmSnnSahf4\nX3Bj3ygfe4k0QvMZYLRhdzmN28xIkupgy/yr3PENGS3tkuqWitzQ9vd9H36g3nGZ\nGmko+C7pAgMBAAECggEADsk4IfqUQZ1iGU2MTi51mm24yJKXL3ACybqw3j/6n9Nx\nozTUE5BEeXz80kK2I7yLdWLhWoxWc0yrOuDqg/ibLBB14diddTtNcrRmGaGpw5Ed\nbDSXtPB7qEN6Gg4y86O3eoQS5u65oQTb1+Ud0gP9GXflEFD+yZkGj07cpb0C/Xhv\nGlRfIsJ4dEai5InNh3AE0x3bVDJjJYoOjttBVA6xkrVfAoXVsxxARaxNTQfP1p++\nK9Vq81n63HqJblabphWd8zEf+/TbSleFr45u25eY7dh0ciypnQd62RVvV7n0jHu3\nYVyI8AK7ZoehXHUVyUszIqNZVSdXQkBTww8BErpWCQKBgQDmG2vTONl4yLUNybkm\n+uI9P29KH+OLYCEyPPdrfKXiJx9RQTk8buOapvme99sMn/yQo84Nwws+/yZ/71C6\nnXWuyyZjnmlyEQnrP0HsS60exp3swLrWK8qiQgjcT8nDU/ff0zzv5AdWbRnweHT9\n4SlngrecY3vbkg0mSpiPmZaXlQKBgQDVoKemyuU4SfLB4w0TIalkC4+wCh9OGSc/\nB0i5T5Xc38FjvRe6nCA3NiSW5D/cME5AFSQGKEbFPIiF0gxNhvasLVNAi1fMRDaZ\n/NtYao4U8QFpFRh4jxMlwFognTI1RQwSFQhm7B8wlvdBguRv7FhupKNxsw7Ug2L8\nJqwMjjgVBQKBgQCWkfLocBa91nfC4fDp9Nj9wviLxHocxXZzbTlpeFMDvR3dCZTu\nWpFMrV5CC2WmyTl3W/iFQM+nFUaYCH0G3+oVypEANrRBE60t5mK4wHwz2zuTpDmd\n02Hw8szhfMRFsDhOmecSAmBayWFj3S6QwjlZpkuHZgGyF8vK9p0Fuja0UQKBgHBv\nXu21ahFHMmKDmvUPyXSjdRvFKBbVvEc7ETafQZP/nGxfMKcB1x7X+0gDl+zO69Bk\nkBJBjoXuxzgPhnQjbZ7PODsHW81htY80e0m8w00YT5K8DKYfP4emBomV0sAguCqo\nMUTiT8QmILq1JoAV17FcK74C7PJCuI1X2UO+cpv1AoGAb1lZkrgm/jSI47o3PFRM\npSFdOrpEIrL/d9J4YNlkZek/393z3Oxx6dPuV031HmVJSc3SOMopY2X0pX3jG6in\nFlbFfVNxgUzj9disB88Wps5g/0j1e1dNdyMI8LL8/et5TQgClcF9EnNwM0rK8S8l\nqFfvLqxy29bVLSyUx0LsB14=\n-----END PRIVATE KEY-----\n",
+  "client_email": "maponlyapi@maponly.iam.gserviceaccount.com",
+  "client_id": "109749248353868193662",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/maponlyapi%40maponly.iam.gserviceaccount.com"
+}

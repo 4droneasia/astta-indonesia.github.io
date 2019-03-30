@@ -804,6 +804,10 @@ function initMap(resetmapcenter) {
 
 	L.control.scale ({maxWidth:240, metric:true, imperial:false, position: 'bottomleft'}).addTo(mymap);
 
+	var esrilayer = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+  });
+
 	bingKey = ('AnFxXUB376BgaEQMj947c43V45ipmMvdcoY-TAE4-Y23mu1yFLHF0k2BMJP-MU1B');
 	binglayer = new L.BingLayer(bingKey,
 			{
@@ -825,7 +829,8 @@ function initMap(resetmapcenter) {
 		"Bing": binglayer,
 		"OSM": osmlayer,
 		"OSM topo": osmtopolayer,
-		"HERE": herelayer
+		"HERE": herelayer,
+		"ESRI topo":esrilayer
 	};
 	mylayercontrol = L.control.layers(baseMaps)
 	mylayercontrol.addTo(mymap);
